@@ -1,0 +1,127 @@
+-------------------------------------------------------------------------------------------------------------------------
+Devolver un excel como un array:
+<?php
+
+//Subir archivo y devolver los registros leidos
+
+include '../plugins/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
+if($_FILES["select_excel"]["name"] != '')
+{
+ $allowed_extension = array('xls', 'xlsx');
+ $file_array = explode(".", $_FILES['select_excel']['name']);
+ $file_extension = end($file_array);
+ if(in_array($file_extension, $allowed_extension))
+ {
+  $reader = IOFactory::createReader('Xlsx');
+  $spreadsheet = $reader->load($_FILES['select_excel']['tmp_name']);
+ 	$worksheet = $spreadsheet->getActiveSheet();
+	$rows = [];
+	foreach ($worksheet->getRowIterator() AS $row) {
+	    $cellIterator = $row->getCellIterator();
+	    $cellIterator->setIterateOnlyExistingCells(FALSE); // This loops through all cells,
+	    $cells = [];
+	    foreach ($cellIterator as $cell) {
+	        $cells[] = $cell->getValue();
+	    }
+	    $rows[] = $cells;
+	}
+ }
+ else
+ {
+  $message = '<div class="alert alert-danger">Only .xls or .xlsx file allowed</div>';
+ }
+}
+else
+{
+ $message = '<div class="alert alert-danger">Please Select File</div>';
+}
+
+print_r($rows);
+
+?>
+-------------------------------------------------------------------------------------------------------------------------
+
+Tambien
+-------------------------------------------------------------------------------------------------------------------------
+<?php
+
+//Subir archivo y devolver los registros leidos
+
+include '../plugins/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
+if($_FILES["select_excel"]["name"] != '')
+{
+ $allowed_extension = array('xls', 'xlsx');
+ $file_array = explode(".", $_FILES['select_excel']['name']);
+ $file_extension = end($file_array);
+ if(in_array($file_extension, $allowed_extension))
+ {
+  $reader = IOFactory::createReader('Xlsx');
+  $spreadsheet = $reader->load($_FILES['select_excel']['tmp_name']);
+		$worksheet = $spreadsheet->getActiveSheet();
+		$rows = $worksheet->toArray();
+ }
+ else
+ {
+  $message = '<div class="alert alert-danger">Only .xls or .xlsx file allowed</div>';
+ }
+}
+else
+{
+ $message = '<div class="alert alert-danger">Please Select File</div>';
+}
+
+print_r($rows);
+
+?>
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Devolver como arreglo y respuesta http
+-------------------------------------------------------------------------------------------------------------------------
+<?php
+
+//Subir archivo y devolver los registros leidos
+header('Content-type: application/json; charset=utf-8');
+
+include '../plugins/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
+if($_FILES["select_excel"]["name"] != '')
+{
+	$allowed_extension = array('xls', 'xlsx');
+	$file_array = explode(".", $_FILES['select_excel']['name']);
+	$file_extension = end($file_array);
+	if(in_array($file_extension, $allowed_extension))
+	{
+		$reader = IOFactory::createReader('Xlsx');
+		$spreadsheet = $reader->load($_FILES['select_excel']['tmp_name']);
+		$worksheet = $spreadsheet->getActiveSheet();
+		$message = $worksheet->toArray();
+		$responseCode = 200;
+	}
+	else
+	{
+		$message = ['message' => '<div class="alert alert-danger">Only .xls or .xlsx file allowed</div>'];
+		$responseCode = 202;
+	}
+}
+else
+{
+	$message = ['message' => '<div class="alert alert-danger">Please Select File</div>'];
+	$responseCode = 202;
+}
+
+echo json_encode($message, JSON_INVALID_UTF8_IGNORE);
+http_response_code($responseCode);
+
+?>
